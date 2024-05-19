@@ -1,20 +1,51 @@
 #include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+#define MAX 100
+void add();
+void view();
+void update();
+void delete();
+struct marks
+{
+	float c,iit,dl,phy,math;
+};
+struct student
+{
+	int roll;
+	char name[MAX],addr[MAX],ph[MAX];
+	struct marks m[MAX]; 
+};
+typedef struct student rec;
 void main()
 {
-	int a[]={-23,-124,-0,234,-234,-3,-5,5};
-	int i,s,l;
-	l=s=a[0];
-	for(i=1;i<8;i++)
+	char ch;
+	int c;
+	do
 	{
-		if(a[i]>l)
+		printf("Enter your choice :\n1. Add Student Record\n2. View Student Record\n3. Update Student Record\n4. Delete Student Record\n5. Exit\n");
+		scanf("%d",c);
+		switch(c)
 		{
-			s=l;
-			l=a[i];
+			case 1:
+				add();
+				break;
+			case 2:
+				view();
+				break;
+			case 3:
+				update();
+				break;
+			case 4:
+				delete();
+				break;
+			case 5:
+				exit(0);
+				break;
+			default:
+				printf("Invalid choice. Please choose from 1 - 5.");
 		}
-		else if(a[i]>s && a[i]!=l)
-		{
-			s=a[i];
-		}
-	}
-	printf("%d",s);
+		printf("Do you want to continue? (Y/N) : ");
+		ch=getche();
+	}while(ch=='y' || ch=='Y');
 }
