@@ -28,16 +28,15 @@ struct student
 typedef struct student rec;
 
 char confirm(char []);
-void add(rec *);
-void view(rec *);
+void add();
+void view();
 void update();
-void delete();
-void save(rec *);
+void del();
+void save(char [],rec);
 
 
 void main()
 {
-	rec s;
 	char ch;
 	int c;
 	do
@@ -49,10 +48,10 @@ void main()
 		switch(c)
 		{
 			case 1:
-				add(&s);
+				add();
 				break;
 			case 2:
-				view(&s);
+				view();
 				break;
 			case 3:
 				//update();
@@ -78,77 +77,79 @@ char confirm(char s[])
 	return(getche());
 }
 
-void add(rec *s)
+void add()
 {
 	FILE *fp;
-	rec s1;
+	rec s1,s;
 	int i,n;
-	fp=fopen("record.txt","ab+");
+	fp=fopen("record.txt","a+");
 	if(fp==NULL)
 	{
 		printf("Error opening file.");
 		exit(1);
 	}
-	printf("Enter the following student details :");
-	printf("\nName : ");
-	fflush(stdin);
-	fgets(s->name,sizeof(s->name),stdin);
-	fflush(stdin);
-	printf("\nRegistration No. : ");
-	fscanf(stdin,"%s",s->regNum);
-	while(fread(&s1,sizeof(s1),1,fp))
+	printf("Enter the following student details :\n");
+	printf("Registration No. : ");
+	fscanf(stdin,"%s",s.regNum);
+	while(fread(&s1,sizeof(rec),1,fp))
 	{
-		if(strcmp(s1.regNum,s->regNum)==0)
+		while(!strcmp(s1.regNum,s.regNum))
 		{
-			printf("Student record with registration no. %s already exists. ",s1.regNum);
-			printf("Enter registration no. again : ");
+			printf("Student record with registration no. %s already exists.\nEnter registration no. again : ",s1.regNum);
 			fflush(stdin);
-			fscanf(stdin,"%s",s->regNum);
+			fscanf(stdin,"%s",s.regNum);
 			rewind(fp);
 		}
 	}
 	fclose(fp);
-	printf("\nFaculty : ");
+	printf("Name : ");
 	fflush(stdin);
-	fgets(s->faculty,sizeof(s->faculty),stdin);
-	printf("\nSemester : ");
-	scanf("%d",&s->sem);
-	printf("\nAddress : ");
+	fgets(s.name,sizeof(s.name),stdin);
+	printf("Faculty : ");
 	fflush(stdin);
-	fgets(s->addr,sizeof(s->addr),stdin);
+	fgets(s.faculty,sizeof(s.faculty),stdin);
+	printf("Semester : ");
+	scanf("%d",&s.sem);
+	printf("Address : ");
+	fflush(stdin);
+	fgets(s.addr,sizeof(s.addr),stdin);
 	printf("Enter no. of subjects : ");
 	scanf("%d",&n);
-	s->sub=(struct subject *)calloc(n,sizeof(struct subject));
-	if(s->sub == NULL)
+	s.sub=(struct subject *)calloc(n,sizeof(struct subject));
+	if(s.sub==NULL)
 	{
         printf("Memory allocation failed.");
         exit(1);
     }
 	for(i=0;i<n;i++)
 	{
-		printf("\nName of Subject %d : ",i+1);
+		printf("Name of Subject %d : ",i+1);
 		fflush(stdin);
-		fgets(((s->sub)+i)->subName,sizeof(((s->sub)+i)->subName),stdin);
-		printf("\nMarks : ");
-		scanf("%f",&((s->sub)+i)->marks);
-		s->m.total+=(((s->sub)+i)->marks);
+		fgets(s.sub[i].subName,sizeof(s.sub[i].subName),stdin);
+		printf("Marks : ");
+		scanf("%f",&s.sub[i].marks);
+		s.m.total+=s.sub[i].marks;
 	}
-	s->m.percent=s->m.total/n;
-	save(s);
-	free(s->sub);
+	s.m.percent=s.m.total/n;
+	save("record.txt",s);
+	for (i = 0; i < n; i++) 
+	{
+    free(s.sub[i].subName);
+	}
+	free(s.sub);
 }
 
-void save(rec *s)
+void save(char fn[],rec s)
 {
 	FILE *fp;
 	int i;
-	fp=fopen("record.txt","ab");
+	fp=fopen(fn,"ab");
 	if(fp==NULL) 
 	{
 		printf("Error opening file.");
 		exit(1);
 	}
-	if(fwrite(s,sizeof(s),1,fp))
+	if(fwrite(&s,sizeof(s),1,fp))
 	{
 		printf("Successfully saved to file.");
 	} else 
@@ -158,7 +159,19 @@ void save(rec *s)
 	fclose(fp);
 }
 
-void view(rec *s)
+void view()
 {
-	printf("%s\n%s",s->name,s->regNum);
+	FILE *fp;
+	rec s1;
+	fp=fopen("record.txt","rb");
+	if(fp==NULL) 
+	{
+		printf("Error opening file.");
+		exit(1);
+	}
+	while(fread(&s1,sizeof(rec),1,fp))
+	{
+		printf("%-17s: %s%-17s: %s%-17s: %s\n%-17s: %s%-17s: %d\n%-17s: %.2f %%\n\n","Name",s1.name,"Address",s1.addr,"Registration No.",s1.regNum,"Faculty",s1.faculty,"Semester",s1.sem,"Percentage",s1.m.percent);
+	}
+	fclose(fp);
 }
