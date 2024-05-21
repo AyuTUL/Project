@@ -188,14 +188,12 @@ void viewAll(FILE *fp,rec s)
 
 void viewFac(FILE *fp,char fac[],rec s)
 {
-	puts(fac);
 	while(fread(&s,sizeof(rec),1,fp))
 	{
-		//strupr(s.faculty);
-		puts(s.faculty);
+		strupr(s.faculty);
+
 		if(strcmp(s.faculty,fac)==0)
 		{
-			puts("goo");
 			printf("%-17s: %s%-17s: %s%-17s: %s\n%-17s: %s%-17s: %d\n%-17s: %.2f %%\n\n","Name",s.name,"Address",s.addr,"Registration No.",s.regNum,"Faculty",s.faculty,"Semester",s.sem,"Percentage",s.m.percent);
 		}
 	}
@@ -220,13 +218,13 @@ void view()
 			switch(ch)
 			{
 				case 1:
-					viewFac(fp,"CSIT",s);
+					viewFac(fp,"CSIT\n",s);
 					break;
 				case 2:
-					viewFac(fp,"BIM",s);
+					viewFac(fp,"BIM\n",s);
 					break;
 				case 3:
-					viewFac(fp,"BHM",s);
+					viewFac(fp,"BHM\n",s);
 					break;
 				default:
 					printf("Invalid choice. Please choose between 1-3.");
