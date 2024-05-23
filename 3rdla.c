@@ -32,15 +32,20 @@ rec add(FILE *);
 char confirm(char []);
 void create();
 void del();
+char* grade(struct subject []);
+void printCheck(rec);
 void prinTab(rec [],int);
+void prinTabFail(rec);
+void prinTabPass(rec);
+int passFail(rec [],char [],int);
 void remo(char []);
 void rena(char [],char []);
 void save(char [],rec);
 void search();
+void sort(rec [],int,char);
 void swap(rec *,rec *);
 void update();
 void view();
-void printCheck(rec);
 void viewFac(FILE *,char [],rec);
 
 void main()
@@ -134,7 +139,6 @@ rec add(FILE *fp)
 	fflush(stdin);
 	fgets(s.addr,sizeof(s.addr),stdin);
 	strtok(s.addr,"\n");
-	strcpy(s.m.gr,"PASS");
 	s.m.total=0;
 	for(i=0;i<5;i++)
 	{
@@ -144,15 +148,26 @@ rec add(FILE *fp)
 		strtok(s.sub[i].subName,"\n");
 		printf("Marks : ");
 		scanf("%f",&s.sub[i].marks);
-		if(s.sub[i].marks<40)
-		{
-			strcpy(s.m.gr,"FAIL");
-			continue;
-		}
 		s.m.total+=s.sub[i].marks;
 	}
-	s.m.percent=s.m.total/5;
+	strcpy(s.m.gr,grade(s.sub));
+	if(strcmp(s.m.gr,"PASS")==0)
+		s.m.percent=s.m.total/5;
 	return(s);
+}
+
+char* grade(struct subject s[])
+{
+	int i;
+	for(i=0;i<5;i++)
+	{
+		if(s[i].marks<40)
+			break;
+	}
+	if(i<5)
+		return("FAIL");
+	else
+		return("PASS");
 }
 
 void remo(char fn[])
@@ -193,7 +208,6 @@ void save(char fn[],rec s)
 	fclose(fp);
 }
 
-
 void printCheck(rec s)
 {
 	if(strcmp(s.m.gr,"PASS")==0)
@@ -202,10 +216,42 @@ void printCheck(rec s)
 		printf("%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %d\n%-17s: %s\n%-17s: N/A\n\n","Name",s.name,"Address",s.addr,"Registration No.",s.regNum,"Faculty",s.faculty,"Semester",s.sem,"Grade",s.m.gr,"Percentage");
 }
 
+void sort(rec sfac[],int n,char c)
+{
+	int i,j;
+	for(i=0;i<n;i++)
+	{
+		for(j=0;j<n-i-1;j++)
+		{
+			switch(c)
+			{
+				case '2':
+				case '6':
+				case '7':
+					if(strcmp((sfac+j)->name,(sfac+j+1)->name)>0)
+						swap(&sfac[j],&sfac[j+1]);
+					break;
+				case '3':
+					if(strcmp((sfac+j)->name,(sfac+j+1)->name)<0)
+						swap(&sfac[j],&sfac[j+1]);
+					break;
+				case '4':
+					if((sfac+j)->m.percent>(sfac+j+1)->m.percent)
+						swap(&sfac[j],&sfac[j+1]);
+					break;
+				case '5':
+					if((sfac+j)->m.percent<(sfac+j+1)->m.percent)
+						swap(&sfac[j],&sfac[j+1]);
+					break;		
+			}
+		}
+	}
+}
+
 void viewFac(FILE *fp,char fac[],rec s)
 {
-	int c=0,ch,i,j;
-	rec sfac[MAX];
+	int c=0,ch,i,j,cpass;
+	rec sfac[MAX],spass[MAX];
 	strupr(fac);
 	while(fread(&s,sizeof(rec),1,fp))
 	{
@@ -216,7 +262,7 @@ void viewFac(FILE *fp,char fac[],rec s)
 			c++;
 		}
 	}
-	printf("\n1. View all Student Record\n2. Ascending by Name\n3. Descending by Name\n4. Ascending by Percentage\n5. Descending by Percentage");
+	printf("\n1. View all Student Record\n2. Ascending by Name\n3. Descending by Name\n4. Ascending by Percentage\n5. Descending by Percentage\n6. Passed Students\n7. Failed Students");
 	ch=confirm("\nEnter your choice : ");
 	system("cls");
 	switch(ch)
@@ -229,47 +275,154 @@ void viewFac(FILE *fp,char fac[],rec s)
 			break;
 		case '2':
 		case '3':
+			sort(sfac,c,ch);
+			prinTab(sfac,c);
+			break;
 		case '4':
 		case '5':
-			for(i=0;i<c;i++)
-				{
-					for(j=0;j<c-i-1;j++)
-					{
-						switch(ch)
-						{
-							case '2':
-								if(strcmp((sfac+j)->name,(sfac+j+1)->name)>0)
-									swap(&sfac[j],&sfac[j+1]);
-								break;
-							case '3':
-								if(strcmp((sfac+j)->name,(sfac+j+1)->name)<0)
-									swap(&sfac[j],&sfac[j+1]);
-								break;
-							case '4':
-	                            if((sfac+j)->m.percent>(sfac+j+1)->m.percent)
-	                                swap(&sfac[j],&sfac[j+1]);
-	                            break;
-	                        case '5':
-	                            if((sfac+j)->m.percent<(sfac+j+1)->m.percent)
-	                                swap(&sfac[j],&sfac[j+1]);
-	                            break;
-						}
-						
-					}
-				}
-				prinTab(sfac,c);
+			cpass=passFail(sfac,"PASS",c);
+			sort(sfac,cpass,ch);
+			prinTab(sfac,cpass);
+			break;
+		case '6':
+			cpass=passFail(sfac,"PASS",c);
+			sort(sfac,cpass,ch);
+			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+			for(i=0;i<cpass;i++)
+			{
+				prinTabPass(sfac[i]);
+			}
+			break;
+		case '7':
+			cpass=passFail(sfac,"FAIL",c);
+			sort(sfac,cpass,ch);
+			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+			for(i=0;i<cpass;i++)
+			{
+				prinTabPass(sfac[i]);
+			}
 			break;
 		default:
 			printf("Invalid choice. Please choose from 1 - 5.");
 	}
 }
 
+//
+//void viewFac(FILE *fp,char fac[],rec s)
+//{
+//	int c=0,ch,i,j,cpass;
+//	rec sfac[MAX],spass[MAX];
+//	strupr(fac);
+//	while(fread(&s,sizeof(rec),1,fp))
+//	{
+//		strupr(s.faculty);
+//		if(strcmp(s.faculty,fac)==0)
+//		{
+//			sfac[c]=s;
+//			c++;
+//		}
+//	}
+//	printf("\n1. View all Student Record\n2. Ascending by Name\n3. Descending by Name\n4. Ascending by Percentage\n5. Descending by Percentage\n6. Passed Students\n7. Failed Students");
+//	ch=confirm("\nEnter your choice : ");
+//	system("cls");
+//	switch(ch)
+//	{
+//		case '1':
+//			for(i=0;i<c;i++)
+//			{
+//				printCheck(sfac[i]);
+//			}
+//			break;
+//		case '2':
+//		case '3':
+//			for(i=0;i<c;i++)
+//			{
+//				for(j=0;j<c-i-1;j++)
+//				{
+//					switch(ch)
+//					{
+//						case '2':
+//							if(strcmp((sfac+j)->name,(sfac+j+1)->name)>0)
+//								swap(&sfac[j],&sfac[j+1]);
+//							break;
+//						case '3':
+//							if(strcmp((sfac+j)->name,(sfac+j+1)->name)<0)
+//								swap(&sfac[j],&sfac[j+1]);
+//							break;
+//					}	
+//				}
+//			}
+//			prinTab(sfac,c);
+//			break;
+//		case '4':
+//		case '5':
+//			cpass=passFail(sfac,"PASS",c);
+//			for(i=0;i<cpass;i++)
+//			{
+//				for(j=0;j<cpass-i-1;j++)
+//				{
+//					switch(ch)
+//					{
+//						case '4':
+//							if((sfac+j)->m.percent>(sfac+j+1)->m.percent)
+//								swap(&sfac[j],&sfac[j+1]);
+//							break;
+//						case '5':
+//							if((sfac+j)->m.percent<(sfac+j+1)->m.percent)
+//								swap(&sfac[j],&sfac[j+1]);
+//							break;
+//					}	
+//				}
+//			}
+//			prinTab(sfac,cpass);
+//			break;
+//		case '6':
+//			cpass=passFail(sfac,"PASS",c);
+//			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+//			for(i=0;i<cpass;i++)
+//				prinTabPass(sfac[i]);
+//			break;
+//		case '7':
+//			cpass=passFail(sfac,"FAIL",c);
+//			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+//			for(i=0;i<cpass;i++)
+//				prinTabFail(sfac[i]);
+//			break;
+//		default:
+//			printf("Invalid choice. Please choose from 1 - 5.");
+//	}
+//}
+
 void swap(rec *a,rec *b)
 {
 	rec temp;
 	temp=*a;
     *a=*b;
-    *b=*a;
+    *b=temp;
+}
+
+int passFail(rec sfac[],char grade[],int c)
+{
+	int i,cpass=0;
+	for(i=0;i<c;i++)
+	{
+		if(strcmp(sfac[i].m.gr,grade)==0)
+		{
+			sfac[cpass]=sfac[i];
+			cpass++;
+		}
+	}
+	return(cpass);
+}
+
+void prinTabPass(rec s)
+{
+	printf("\n| %-20s | %-15s | %-16s | %-7s | %8d | %-5s | %8.2f %% |",s.name,s.addr,s.regNum,s.faculty,s.sem,s.m.gr,s.m.percent);
+}
+
+void prinTabFail(rec s)
+{
+	printf("\n| %-20s | %-15s | %-16s | %-7s | %8d | %-5s | %10s |",s.name,s.addr,s.regNum,s.faculty,s.sem,s.m.gr,"N/A");
 }
 
 void prinTab(rec s[],int n)
@@ -278,10 +431,10 @@ void prinTab(rec s[],int n)
 	printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
 	for(i=0;i<n;i++)
 	{
-		if(strcmp(s[i].m.gr,"FAIL")==0)
-			printf("\n| %-20s | %-15s | %-16s | %-7s | %8d | %-5s | %10s |",s[i].name,s[i].addr,s[i].regNum,s[i].faculty,s[i].sem,s[i].m.gr,"N/A");
+		if(strcmp(s[i].m.gr,"PASS")==0)
+			prinTabPass(s[i]);
 		else
-			printf("\n| %-20s | %-15s | %-16s | %-7s | %8d | %-5s | %8.2f %% |",s[i].name,s[i].addr,s[i].regNum,s[i].faculty,s[i].sem,s[i].m.gr,s[i].m.percent);
+			prinTabFail(s[i]);
 	}
 }
 
@@ -290,7 +443,7 @@ void view()
 	FILE *fp;
 	rec s;
 	int c;
-	char fac[4];
+	char fac[5];
 	fp=open("record.txt","rb");
 	printf("1. View all Student Record\n2. View Student Record according to Faculty");
 	c=confirm("\nEnter your choice : ");
@@ -304,11 +457,10 @@ void view()
 			}
 			break;
 		case '2':
-			printf("\nEnter Faculty : ");
+			printf("\n\nEnter Faculty : ");
             fflush(stdin);
             fgets(fac,sizeof(fac),stdin);
             strtok(fac,"\n");
-            strupr(fac);
             viewFac(fp,fac,s);
 			break;
 		default:
