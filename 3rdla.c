@@ -34,6 +34,7 @@ void create();
 void del();
 char* grade(struct subject []);
 void printCheck(rec);
+void prinHead();
 void prinTab(rec [],int);
 void prinTabFail(rec);
 void prinTabPass(rec);
@@ -287,7 +288,7 @@ void viewFac(FILE *fp,char fac[],rec s)
 		case '6':
 			cpass=passFail(sfac,"PASS",c);
 			sort(sfac,cpass,ch);
-			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+			prinHead();
 			for(i=0;i<cpass;i++)
 			{
 				prinTabPass(sfac[i]);
@@ -296,7 +297,7 @@ void viewFac(FILE *fp,char fac[],rec s)
 		case '7':
 			cpass=passFail(sfac,"FAIL",c);
 			sort(sfac,cpass,ch);
-			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+			prinHead();
 			for(i=0;i<cpass;i++)
 			{
 				prinTabPass(sfac[i]);
@@ -307,91 +308,7 @@ void viewFac(FILE *fp,char fac[],rec s)
 	}
 }
 
-//
-//void viewFac(FILE *fp,char fac[],rec s)
-//{
-//	int c=0,ch,i,j,cpass;
-//	rec sfac[MAX],spass[MAX];
-//	strupr(fac);
-//	while(fread(&s,sizeof(rec),1,fp))
-//	{
-//		strupr(s.faculty);
-//		if(strcmp(s.faculty,fac)==0)
-//		{
-//			sfac[c]=s;
-//			c++;
-//		}
-//	}
-//	printf("\n1. View all Student Record\n2. Ascending by Name\n3. Descending by Name\n4. Ascending by Percentage\n5. Descending by Percentage\n6. Passed Students\n7. Failed Students");
-//	ch=confirm("\nEnter your choice : ");
-//	system("cls");
-//	switch(ch)
-//	{
-//		case '1':
-//			for(i=0;i<c;i++)
-//			{
-//				printCheck(sfac[i]);
-//			}
-//			break;
-//		case '2':
-//		case '3':
-//			for(i=0;i<c;i++)
-//			{
-//				for(j=0;j<c-i-1;j++)
-//				{
-//					switch(ch)
-//					{
-//						case '2':
-//							if(strcmp((sfac+j)->name,(sfac+j+1)->name)>0)
-//								swap(&sfac[j],&sfac[j+1]);
-//							break;
-//						case '3':
-//							if(strcmp((sfac+j)->name,(sfac+j+1)->name)<0)
-//								swap(&sfac[j],&sfac[j+1]);
-//							break;
-//					}	
-//				}
-//			}
-//			prinTab(sfac,c);
-//			break;
-//		case '4':
-//		case '5':
-//			cpass=passFail(sfac,"PASS",c);
-//			for(i=0;i<cpass;i++)
-//			{
-//				for(j=0;j<cpass-i-1;j++)
-//				{
-//					switch(ch)
-//					{
-//						case '4':
-//							if((sfac+j)->m.percent>(sfac+j+1)->m.percent)
-//								swap(&sfac[j],&sfac[j+1]);
-//							break;
-//						case '5':
-//							if((sfac+j)->m.percent<(sfac+j+1)->m.percent)
-//								swap(&sfac[j],&sfac[j+1]);
-//							break;
-//					}	
-//				}
-//			}
-//			prinTab(sfac,cpass);
-//			break;
-//		case '6':
-//			cpass=passFail(sfac,"PASS",c);
-//			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
-//			for(i=0;i<cpass;i++)
-//				prinTabPass(sfac[i]);
-//			break;
-//		case '7':
-//			cpass=passFail(sfac,"FAIL",c);
-//			printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
-//			for(i=0;i<cpass;i++)
-//				prinTabFail(sfac[i]);
-//			break;
-//		default:
-//			printf("Invalid choice. Please choose from 1 - 5.");
-//	}
-//}
+
 
 void swap(rec *a,rec *b)
 {
@@ -415,6 +332,14 @@ int passFail(rec sfac[],char grade[],int c)
 	return(cpass);
 }
 
+void prinHead()
+{
+	int i;
+	printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |\n","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+	for(i=0;i<103;i++)
+		printf("-");
+}
+
 void prinTabPass(rec s)
 {
 	printf("\n| %-20s | %-15s | %-16s | %-7s | %8d | %-5s | %8.2f %% |",s.name,s.addr,s.regNum,s.faculty,s.sem,s.m.gr,s.m.percent);
@@ -428,7 +353,7 @@ void prinTabFail(rec s)
 void prinTab(rec s[],int n)
 {
 	int i;
-	printf("| %-20s | %-15s | %-16s | %-7s | %-8s | %-5s | %-10s |","Student Name","Address","Registration No.","Faculty","Semester","Grade","Percentage");
+	prinHead();
 	for(i=0;i<n;i++)
 	{
 		if(strcmp(s[i].m.gr,"PASS")==0)
