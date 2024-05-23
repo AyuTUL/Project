@@ -29,13 +29,9 @@ typedef struct student rec;
 // Function prototypes
 FILE* open(char [],char []);
 rec add(FILE *);
-void ascn(rec [],int);
-void ascp(rec [],int);
 char confirm(char []);
 void create();
 void del();
-void descn(rec [],int);
-void descp(rec [],int);
 void prinTab(rec [],int);
 void remo(char []);
 void rena(char [],char []);
