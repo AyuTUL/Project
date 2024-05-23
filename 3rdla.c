@@ -6,7 +6,6 @@
 
 struct subject
 {
-	char subName[MAX];
 	float marks;
 };
 
@@ -18,21 +17,21 @@ struct marks
 
 struct student
 {
-	int sem;
+	int sem,subNum;
 	char name[MAX],addr[MAX],regNum[MAX],faculty[MAX];
-	struct subject sub[5];
+	struct subject *sub;
 	struct marks m; 
 };
 
 typedef struct student rec;
 
 // Function prototypes
-FILE* open(char [],char []);
+FILE* openFile(char [],char []);
 rec add(FILE *);
 char confirm(char []);
 void create();
 void del();
-char* grade(struct subject []);
+char* grade(struct subject [],int);
 void printCheck(rec);
 void prinHead();
 void prinTab(rec [],int);
@@ -91,14 +90,14 @@ void create()
 {
 	FILE *fp;
 	rec s;
-	fp=open("record.txt","ab+");
+	fp=openFile("record.txt","ab+");
 	printf("Enter the following student details :\n");
 	s=add(fp);
 	save("record.txt",s);
 	printf("File Successfully saved.");
 }
 
-FILE* open(char fn[],char mode[])
+FILE* openFile(char fn[],char mode[])
 {
 	FILE *fp;
 	fp=fopen(fn,mode);
@@ -140,32 +139,37 @@ rec add(FILE *fp)
 	fflush(stdin);
 	fgets(s.addr,sizeof(s.addr),stdin);
 	strtok(s.addr,"\n");
+	printf("Enter no. of subjects : ");
+	scanf("%d",&s.subNum);
 	s.m.total=0;
-	for(i=0;i<5;i++)
+	s.sub=(struct subject *)malloc(s.subNum*sizeof(struct subject));
+	if(s.sub==NULL)
 	{
-		printf("Name of Subject %d : ",i+1);
-		fflush(stdin);
-		fgets(s.sub[i].subName,sizeof(s.sub[i].subName),stdin);
-		strtok(s.sub[i].subName,"\n");
-		printf("Marks : ");
+		printf("Memory allocation failed.");
+		exit(1);
+	}
+	printf("Enter marks in %d subjects:\n",s.subNum);
+	for(i=0;i<s.subNum;i++)
+	{
+		printf("For subject %d : ",i+1);
 		scanf("%f",&s.sub[i].marks);
 		s.m.total+=s.sub[i].marks;
 	}
-	strcpy(s.m.gr,grade(s.sub));
+	strcpy(s.m.gr,grade(s.sub,s.subNum));
 	if(strcmp(s.m.gr,"PASS")==0)
-		s.m.percent=s.m.total/5;
+		s.m.percent=s.m.total/s.subNum;
 	return(s);
 }
 
-char* grade(struct subject s[])
+char* grade(struct subject s[],int n)
 {
 	int i;
-	for(i=0;i<5;i++)
+	for(i=0;i<n;i++)
 	{
 		if(s[i].marks<40)
 			break;
 	}
-	if(i<5)
+	if(i<n)
 		return("FAIL");
 	else
 		return("PASS");
@@ -174,7 +178,7 @@ char* grade(struct subject s[])
 void remo(char fn[])
 {
 	int err;
-	err=remove("record.txt");
+	err=remove(fn);
 	if(err!=0)
 	{
 		printf("Error deleting file.");
@@ -203,7 +207,7 @@ void save(char fn[],rec s)
 {
 	FILE *fp;
 	int i;
-	fp=open(fn,"ab");
+	fp=openFile(fn,"ab");
 	if(fwrite(&s,sizeof(s),1,fp)!=1)
 		printf("Error writing into file.");
 	fclose(fp);
@@ -369,7 +373,7 @@ void view()
 	rec s;
 	int c;
 	char fac[5];
-	fp=open("record.txt","rb");
+	fp=openFile("record.txt","rb");
 	printf("1. View all Student Record\n2. View Student Record according to Faculty");
 	c=confirm("\nEnter your choice : ");
 	switch(c)
@@ -400,8 +404,8 @@ void update()
 	rec s1;
 	char reg[100];
 	int flag=0;
-	fp1=open("record.txt","rb");
-	fp2=open("temp.txt","wb");
+	fp1=openFile("record.txt","rb");
+	fp2=openFile("temp.txt","wb");
 	printf("Enter Registration No. of student record to be updated : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);
@@ -435,8 +439,8 @@ void del()
 	rec s1;
 	char reg[100];
 	int flag=0;
-	fp1=open("record.txt","rb");
-	fp2=open("temp.txt","wb");
+	fp1=openFile("record.txt","rb");
+	fp2=openFile("temp.txt","wb");
 	printf("Enter Registration No. of student record to be deleted : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);
@@ -469,7 +473,7 @@ void search()
 	rec s;
 	char reg[100];
 	int flag=0;
-	fp=open("record.txt","rb");
+	fp=openFile("record.txt","rb");
 	printf("Enter Registration No. of student record to be searched : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);

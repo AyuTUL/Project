@@ -1,30 +1,55 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> // Include time.h for randomization
+#include <time.h>
 
-// Define the structure for student records
+// Define the structure for subject marks
 struct subject {
-    char subName[100];
     float marks;
 };
 
-struct marks {
-    float total, percent;
-    char gr[5];
+// Define the structure for student records
+struct student {
+    int sem, subNum;
+    char name[100], addr[100], regNum[100], faculty[100];
+    struct subject *sub; // Pointer to array of subjects
+    float totalMarks, percent;
+    char grade[5];
 };
 
-struct student {
-    int sem;
-    char name[100], addr[100], regNum[100], faculty[100];
-    struct subject sub[5];
-    struct marks m; 
-};
+// Function to generate random marks for subjects
+void generateRandomMarks(struct subject *sub, int subNum) {
+    int i;
+    for (i = 0; i < subNum; i++) {
+        sub[i].marks = (rand() % 81) + 20; // Random marks between 30 and 100
+    }
+}
+
+// Function to calculate total marks, percentage, and grade
+void calculateResults(struct student *s) {
+    int i;
+    s->totalMarks = 0;
+    for (i = 0; i < s->subNum; i++) {
+        s->totalMarks += s->sub[i].marks;
+    }
+    s->percent = (s->totalMarks / (s->subNum * 100)) * 100;
+    strcpy(s->grade, (s->percent >= 40) ? "PASS" : "FAIL");
+}
+
+// Function to generate a random name
+void generateRandomName(char *name) {
+    static const char *firstNames[] = {"John", "Emma", "Michael", "Sophia", "William", "Olivia", "James", "Ava"};
+    static const char *lastNames[] = {"Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis"};
+
+    strcpy(name, firstNames[rand() % (sizeof(firstNames) / sizeof(firstNames[0]))]);
+    strcat(name, " ");
+    strcat(name, lastNames[rand() % (sizeof(lastNames) / sizeof(lastNames[0]))]);
+}
 
 int main() {
     FILE *fp;
     struct student records[30]; // Sample data for 30 students
-    int i, j, k;
+    int i;
 
     // Initialize random seed
     srand(time(NULL));
@@ -32,8 +57,8 @@ int main() {
     // Initialize sample student records
     for (i = 0; i < 30; i++) {
         sprintf(records[i].regNum, "REG%d", i + 1);
-        strcpy(records[i].name, "Student Name");
-        strcpy(records[i].addr, "Address");
+        generateRandomName(records[i].name);
+        sprintf(records[i].addr, "Address %d", i + 1);
         
         // Randomly assign faculty
         int facultyIndex = rand() % 4;
@@ -55,23 +80,14 @@ int main() {
         }
 
         records[i].sem = (i % 8) + 1; // Random semester between 1 and 8
+        records[i].subNum = (rand() % 4) + 5; // Random number of subjects between 5 and 8
+        records[i].sub = (struct subject *)malloc(records[i].subNum * sizeof(struct subject));
 
-        // Generate random subject names and marks
-        for (j = 0; j < 5; j++) {
-            sprintf(records[i].sub[j].subName, "Subject%d", j + 1);
-            records[i].sub[j].marks = (rand() % 71) + 30; // Random marks between 30 and 100
-        }
+        // Generate random marks for subjects
+        generateRandomMarks(records[i].sub, records[i].subNum);
 
-        strcpy(records[i].m.gr, "PASS"); // Default grade
-        records[i].m.total = 0;
-        for (k = 0; k < 5; k++) {
-            if (records[i].sub[k].marks < 40) {
-                strcpy(records[i].m.gr, "FAIL");
-                break;
-            }
-            records[i].m.total += records[i].sub[k].marks;
-        }
-        records[i].m.percent = records[i].m.total / 5.0;
+        // Calculate total marks, percentage, and grade
+        calculateResults(&records[i]);
     }
 
     // Open file in binary write mode
@@ -83,7 +99,7 @@ int main() {
     // Close the file
     fclose(fp);
 
-    printf("Data written to record.bin.\n");
+    printf("Data written to record.txt.\n");
 
     return 0;
 }
