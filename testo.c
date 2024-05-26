@@ -33,6 +33,7 @@ char confirm(char []);
 void create();
 void dash();
 void del();
+void gotoxy(int,int);
 char* grade(struct subject [],int);
 void printCheck(rec);
 void prinHead();
@@ -52,32 +53,49 @@ void viewFac(FILE *,char [],rec);
 
 void main()
 {
-	char c,ch;
-	dash();
+	char ch;
+	int c,x=35,y=7;
 	do
 	{
-		system("cls");
-		printf("1. Add Student Record\n2. View Student Record\n3. Update Student Record\n4. Delete Student Record\n5. Search Student Record\n6. Exit");
-		c=confirm("Enter your choice : ");
+	gotoxy(20,5);
+	dash();
+	gotoxy(x,++y);
+	printf("|\tStudent Record Management System\t|");
+	gotoxy(x,++y);
+	printf("\r");
+	dash();
+	gotoxy(x,y+=3);
+	printf("1. Add Student Record");
+	gotoxy(x,++y);
+	printf("2. View Student Record");
+	gotoxy(x,++y);
+	printf("3. Delete Student Record");
+	gotoxy(x,++y);
+	printf("4. Search Student Record");
+	gotoxy(x,++y);
+	printf("5. Exit program");
+	gotoxy(x,++y);
+	printf("Which operation do you want to perform?[1-5]: ");
+	scanf("%d",&choice);
 		system("cls");
 		switch(c)
 		{
-			case '1':
+			case 1:
 				create();
 				break;
-			case '2':
+			case 2:
 				view();
 				break;
-			case '3':
+			case 3:
 				update();
 				break;
-			case '4':
+			case 4:
 				del();
 				break;
-			case '5':
+			case 5:
 				search();
 				break;
-			case '6':
+			case 6:
 				printf("Thank you for using the program.");
 				exit(0);
 				break;
@@ -334,6 +352,26 @@ void viewFac(FILE *fp,char fac[],rec s)
 		default:
 			printf("Invalid choice. Please choose from 1 - 5.");
 	}
+}
+
+void gotoxy(int x,int y)
+{
+    // Get handle to console output
+    HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
+    if(hConsole==INVALID_HANDLE_VALUE) 
+	{
+        printf("Error getting console handle.");
+        exit(1);
+	}
+    // Move cursor to the 15th pixel position
+    COORD cursorPos;
+    cursorPos.X=x;
+    cursorPos.Y=y;
+    if(!SetConsoleCursorPosition(hConsole,cursorPos))
+	{
+        printf("Error setting console cursor position.");
+        exit(1);
+    }
 }
 
 void swap(rec *a,rec *b)
