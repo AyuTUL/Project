@@ -1,3 +1,10 @@
+//search done
+//delete done
+//view all done
+//update done
+//exit done
+//add done
+
 #include<stdio.h>
 #include<conio.h>
 #include<stdlib.h>
@@ -26,16 +33,18 @@ struct student
 
 typedef struct student rec;
 
+int *posx,*posy;
+
 // Function prototypes
 FILE* openFile(char [],char []);
 rec add(FILE *);
-char confirm(char []);
+char confirm(char [],int *,int *);
 void create();
 void dash();
 void del();
 void gotoxy(int,int);
 char* grade(struct subject [],int);
-void printCheck(rec);
+void printCheck(rec,int);
 void prinHead();
 void prinTab(rec [],int);
 void prinTabFail(rec);
@@ -53,56 +62,67 @@ void viewFac(FILE *,char [],rec);
 
 void main()
 {
-	char ch;
-	int c,x=35,y=7;
+	char ch,c;
+	int x,y;
+	posx=&x;
+	posy=&y;
 	do
 	{
-	gotoxy(20,5);
+	system("cls");
+	x=35;
+	y=6;
+	gotoxy(20,4);
 	dash();
 	gotoxy(x,++y);
 	printf("|\tStudent Record Management System\t|");
 	gotoxy(x,++y);
-	printf("\r");
 	dash();
 	gotoxy(x,y+=3);
 	printf("1. Add Student Record");
 	gotoxy(x,++y);
 	printf("2. View Student Record");
 	gotoxy(x,++y);
-	printf("3. Delete Student Record");
+	printf("3. Update Student Record");
 	gotoxy(x,++y);
-	printf("4. Search Student Record");
+	printf("4. Delete Student Record");
 	gotoxy(x,++y);
-	printf("5. Exit program");
+	printf("5. Search Student Record");
 	gotoxy(x,++y);
-	printf("Which operation do you want to perform?[1-5]: ");
-	scanf("%d",&choice);
-		system("cls");
-		switch(c)
-		{
-			case 1:
-				create();
-				break;
-			case 2:
-				view();
-				break;
-			case 3:
-				update();
-				break;
-			case 4:
-				del();
-				break;
-			case 5:
-				search();
-				break;
-			case 6:
-				printf("Thank you for using the program.");
-				exit(0);
-				break;
-			default:
-				printf("Invalid choice. Please choose from 1 - 5.");
-		}
-		ch=confirm("\nDo you want to continue? [Y/N] : ");
+	printf("6. Exit program");
+	y+=2;
+	c=confirm("Which operation do you want to perform? [1-6] : ",&x,&y);
+	system("cls");
+	switch(c)
+	{
+		case '1':
+			create();
+			break;
+		case '2':
+			view();
+			break;
+		case '3':
+			update();
+			break;
+		case '4':
+			del();
+			break;
+		case '5':
+			search();
+			break;
+		case '6':
+			gotoxy(x,8);
+			dash();
+			gotoxy(45,12);
+			printf("Thank you for using the program.");
+			gotoxy(x,14);
+			dash();
+			exit(0);
+			break;
+		default:
+			printf("Invalid choice. Please choose from 1 - 5.");
+	}
+	(*posy)++;
+	ch=confirm("Do you want to continue? [Y/N] : ",posx,posy);
 	}while(ch=='y' || ch=='Y');
 }
 
@@ -128,12 +148,16 @@ void dash()
 void create()
 {
 	FILE *fp;
+	int x=35,y=5;
 	rec s;
 	fp=openFile("record.txt","ab+");
-	printf("Enter the following student details :\n");
+	gotoxy(x,y);
+	printf("Enter the following student details :");
 	s=add(fp);
 	save("record.txt",s);
+	gotoxy(x,*posy);
 	printf("File Successfully saved.");
+	*(posy)+=2;
 }
 
 FILE* openFile(char fn[],char mode[])
@@ -151,45 +175,57 @@ FILE* openFile(char fn[],char mode[])
 rec add(FILE *fp)
 {
 	rec s,temp;
-	int i;
+	int i,x=35,y=7;
+	gotoxy(x,y);
 	printf("Registration No. : ");
 	fscanf(stdin,"%s",s.regNum);
 	while(fread(&temp,sizeof(rec),1,fp))
 	{
 		while(!strcmp(temp.regNum,s.regNum))
 		{
-			printf("Student record with registration no. %s already exists.\nEnter registration no. again : ",s.regNum);
+			gotoxy(x=28,y+=2);
+			printf("Student record with Registration No. %s already exists.",s.regNum);
+			gotoxy(x=35,y+=2);
+			printf("Enter registration no. again : ");
 			fflush(stdin);
 			fscanf(stdin,"%s",s.regNum);
 			rewind(fp);
 		}
 	}
 	fclose(fp);
+	gotoxy(x,++y);
 	printf("Name : ");
 	fflush(stdin);
 	fgets(s.name,sizeof(s.name),stdin);
 	strtok(s.name,"\n");
+	gotoxy(x,++y);
 	printf("Faculty : ");
 	fgets(s.faculty,sizeof(s.faculty),stdin);
 	strtok(s.faculty,"\n");
+	gotoxy(x,++y);
 	printf("Semester : ");
 	scanf("%d",&s.sem);
+	gotoxy(x,++y);
 	printf("Address : ");
 	fflush(stdin);
 	fgets(s.addr,sizeof(s.addr),stdin);
 	strtok(s.addr,"\n");
+	gotoxy(x,++y);
 	printf("Enter no. of subjects : ");
 	scanf("%d",&s.subNum);
 	s.m.total=0;
 	s.sub=(struct subject *)malloc(s.subNum*sizeof(struct subject));
 	if(s.sub==NULL)
 	{
+		gotoxy(x,++y);
 		printf("Memory allocation failed.");
 		exit(1);
 	}
+	gotoxy(x,++y);
 	printf("Enter marks in %d subjects:\n",s.subNum);
 	for(i=0;i<s.subNum;i++)
 	{
+		gotoxy(x,++y);
 		printf("For subject %d : ",i+1);
 		scanf("%f",&s.sub[i].marks);
 		s.m.total+=s.sub[i].marks;
@@ -197,6 +233,9 @@ rec add(FILE *fp)
 	strcpy(s.m.gr,grade(s.sub,s.subNum));
 	if(strcmp(s.m.gr,"PASS")==0)
 		s.m.percent=s.m.total/s.subNum;
+	y+=3;
+	*posy=y;
+	*posx=x;
 	return(s);
 }
 
@@ -236,30 +275,46 @@ void rena(char old[],char newn[])
 	}
 }
 
-char confirm(char s[])
+char confirm(char s[],int *x,int *y)
 {
-	printf("\n%s",s);
-	return(getche());
+	char c;	
+	gotoxy(*x,*y);
+	printf("%s",s);
+	scanf(" %c",&c);
+	return(c);
 }
 
 void save(char fn[],rec s)
 {
 	FILE *fp;
-	int i;
 	fp=openFile(fn,"ab");
 	if(fwrite(&s,sizeof(s),1,fp)!=1)
 		printf("Error writing into file.");
-	free(s.sub);
+	//free(s.sub);
 	fclose(fp);
 }
 
-void printCheck(rec s)
+void printCheck(rec s,int y)
 {
+	int x=15;
 	dash();
+	gotoxy(x,y);
+	printf("%-17s: %s","Name",s.name);
+	gotoxy(x,++y);
+	printf("%-17s: %s","Address",s.addr);
+	gotoxy(x,++y);
+	printf("%-17s: %s","Registration No.",s.regNum);
+	gotoxy(x,++y);
+	printf("%-17s: %s","Faculty",s.faculty);
+	gotoxy(x,++y);
+	printf("%-17s: %d","Semester",s.sem);
+	gotoxy(x,++y);
+	printf("%-17s: %s","Grade",s.m.gr);
+	gotoxy(x,++y);
 	if(strcmp(s.m.gr,"PASS")==0)
-		printf("%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %d\n%-17s: %s\n%-17s: %.2f %%\n","Name",s.name,"Address",s.addr,"Registration No.",s.regNum,"Faculty",s.faculty,"Semester",s.sem,"Grade",s.m.gr,"Percentage",s.m.percent);
+		printf("%-17s: %.2f %%\n","Percentage",s.m.percent);
 	else
-		printf("%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %s\n%-17s: %d\n%-17s: %s\n%-17s: N/A\n","Name",s.name,"Address",s.addr,"Registration No.",s.regNum,"Faculty",s.faculty,"Semester",s.sem,"Grade",s.m.gr,"Percentage");
+		printf("%-17s: N/A\n","Percentage");
 }
 
 void sort(rec sfac[],int n,char c)
@@ -296,7 +351,8 @@ void sort(rec sfac[],int n,char c)
 
 void viewFac(FILE *fp,char fac[],rec s)
 {
-	int c=0,ch,i,j,cpass;
+	int c=0,i,j,cpass,x=35,y=6;
+	char ch;
 	rec sfac[MAX],spass[MAX];
 	strupr(fac);
 	while(fread(&s,sizeof(rec),1,fp))
@@ -308,16 +364,32 @@ void viewFac(FILE *fp,char fac[],rec s)
 			c++;
 		}
 	}
-	printf("\n1. View all Student Record\n2. Ascending by Name\n3. Descending by Name\n4. Ascending by Percentage\n5. Descending by Percentage\n6. Passed Students\n7. Failed Students");
-	ch=confirm("\nEnter your choice : ");
+	gotoxy(x,y);
+	printf("1. View all Student Record");
+	gotoxy(x,++y);
+	printf("2. Ascending by Name");
+	gotoxy(x,++y);
+	printf("3. Descending by Name");
+	gotoxy(x,++y);
+	printf("4. Ascending by Percentage");
+	gotoxy(x,++y);
+	printf("5. Descending by Percentage");
+	gotoxy(x,++y);
+	printf("6. Passed Students");
+	gotoxy(x,++y);
+	printf("7. Failed Students");
+	y+=2;
+	ch=confirm("Enter your choice : ",&x,&y);
 	system("cls");
 	switch(ch)
 	{
 		case '1':
+			y=-7;
 			for(i=0;i<c;i++)
 			{
-				printCheck(sfac[i]);
+				printCheck(sfac[i],y+=10);
 			}
+			
 			dash();
 			break;
 		case '2':
@@ -352,18 +424,18 @@ void viewFac(FILE *fp,char fac[],rec s)
 		default:
 			printf("Invalid choice. Please choose from 1 - 5.");
 	}
+	*posy=600;
+	*posx=25;
 }
 
 void gotoxy(int x,int y)
 {
-    // Get handle to console output
     HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
     if(hConsole==INVALID_HANDLE_VALUE) 
 	{
         printf("Error getting console handle.");
         exit(1);
 	}
-    // Move cursor to the 15th pixel position
     COORD cursorPos;
     cursorPos.X=x;
     cursorPos.Y=y;
@@ -431,23 +503,34 @@ void view()
 {
 	FILE *fp;
 	rec s;
-	int c;
-	char fac[5];
+	int x=35,y=6;
+	char c,fac[5];
 	fp=openFile("record.txt","rb");
-	printf("1. View all Student Record\n2. View Student Record according to Faculty");
-	c=confirm("\nEnter your choice : ");
+	gotoxy(x,++y);
+	printf("1. View all Student Record");
+	gotoxy(x,++y);
+	printf("2. View Student Record according to Faculty");
+	fflush(stdin);
+	y+=2;
+	c=confirm("Enter your choice [1-2]: ",&x,&y);
 	switch(c)
 	{
 		case '1':
 			system("cls");
+			gotoxy(15,0);
+			printf("Displaying all student records :\n");
+			y=-7;
 			while(fread(&s,sizeof(rec),1,fp))
 			{
-				printCheck(s);
+				printCheck(s,y+=10);
 			}
+			y+=9;
 			dash();
 			break;
 		case '2':
-			printf("\n\nEnter Faculty : ");
+			system("cls");
+			gotoxy(35,4);
+			printf("Enter Faculty : ");
             fflush(stdin);
             fgets(fac,sizeof(fac),stdin);
             strtok(fac,"\n");
@@ -456,6 +539,8 @@ void view()
 		default:
 			printf("\nInvalid choice. Please choose between 1 & 2.");
 	}
+	*posy=y;
+	*posx=25;
 	fclose(fp);
 }
 
@@ -464,34 +549,41 @@ void update()
 	FILE *fp1,*fp2;
 	rec s1;
 	char reg[100];
-	int flag=0;
+	int flag=0,x=25,y=4;
 	fp1=openFile("record.txt","rb");
 	fp2=openFile("temp.txt","wb");
+	gotoxy(x,y);
 	printf("Enter Registration No. of student record to be updated : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);
 	while(fread(&s1,sizeof(rec),1,fp1))
 	{
-		if(strcmp(reg,s1.regNum)==0)
+		if(strcmp(strupr(reg),strupr(s1.regNum))==0)
 		{
-			flag=1;	
-			printf("Enter new details :\n");
+			flag=1;
+			gotoxy(x,++y);	
+			printf("Enter new details :\n\n");
 			s1=add(fp2);	
 		}
 		save("temp.txt",s1);
 	}
 	if(flag==0)
 	{
+		gotoxy(x,y+=3);
 		printf("Record not found.");
 	}
 	else
 	{
+		gotoxy(x,y+=15);
 		printf("File successfully saved.");
 	}
 	fclose(fp2);
 	fclose(fp1);
 	remo("record.txt");
 	rena("temp.txt","record.txt");
+	y+=2;
+	*posy=y;
+	*posx=x;	
 }
 
 void del()
@@ -499,47 +591,54 @@ void del()
 	FILE *fp1,*fp2;
 	rec s1;
 	char reg[100];
-	int flag=0;
+	int flag=0,x=25,y=10;
 	char ch;
 	fp1=openFile("record.txt","rb");
 	fp2=openFile("temp.txt","wb");
+	gotoxy(x,6);
 	printf("Enter Registration No. of student record to be deleted : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);
-	strupr(reg);
 	while(fread(&s1,sizeof(rec),1,fp1))
 	{
-		strupr(s1.regNum);
-		if(strcmp(reg,s1.regNum)==0)
+		if(strcmp(strupr(reg),strupr(s1.regNum))==0)
 		{
 			flag=1;
-			printCheck(s1);
-			confirm("Do you want to delete this record ? [Y/N] : ");
+			printCheck(s1,y);
+			dash();
+			y=20;
+			ch=confirm("Do you want to delete this record ? [Y/N] : ",&x,&y);
 			if(ch=='y' || ch=='Y')
 			{
 				flag=2;
 				continue;
-			}
-					
+			}			
 		}
 		save("temp.txt",s1);
+		//fwrite(&s1, sizeof(rec), 1, fp2);
 	}
 	if(flag==0)
 	{
-		printf("\nRecord not found.");
+		gotoxy(25,y-=1);
+		printf("Record not found.");
 	}
 	else if(flag==2)
 	{
-		printf("\nRecord successfully deleted.");
+		gotoxy(25,y+=3);
+		printf("Record successfully deleted.");
 	}
 	else if(flag==1)
 	{
-		printf("\nRecord not deleted.");
+		gotoxy(25,y+=3);
+		printf("Record not deleted.");
 	}
 	fclose(fp2);
 	fclose(fp1);
 	remo("record.txt");
 	rena("temp.txt","record.txt");
+	y+=2;
+	*posy=y;
+	*posx=x;
 }
 
 void search()
@@ -547,22 +646,33 @@ void search()
 	FILE *fp;
 	rec s;
 	char reg[100];
-	int flag=0;
+	int flag=0,x=25,y=10;
 	fp=openFile("record.txt","rb");
+	gotoxy(x,6);
 	printf("Enter Registration No. of student record to be searched : ");
 	fflush(stdin);
 	fscanf(stdin,"%s",reg);
 	while(fread(&s,sizeof(rec),1,fp))
 	{
-		if(strcmp(reg,s.regNum)==0)
+		if(strcmp(strupr(reg),strupr(s.regNum))==0)
 		{
 			flag=1;
-			printCheck(s);
+			printCheck(s,y);
+			dash();
+			y=19;
+			x=40;
+			break;
 		}
 	}
 	if(flag==0)
 	{
+		y-=2;
+		gotoxy(x,y);
+		y+=4;
+		x=40;
 		printf("Record not found.");
 	}
+	*posy=y;
+	*posx=x;
 	fclose(fp);
 }
