@@ -98,11 +98,11 @@ void main() {
 				search();
 				break;
 			case '6':
-				gotoxy(x,8);
+				gotoxy(x,4);
 				dash();
-				gotoxy(45,12);
+				gotoxy(45,8);
 				printf("Thank you for using the program.");
-				gotoxy(x,14);
+				gotoxy(x,10);
 				dash();
 				exit(0);
 				break;
@@ -112,7 +112,6 @@ void main() {
 				*posy=10;
 		}
 		(*posy)++;
-		*posx=15;
 		ch=confirm("Do you want to continue? [Y/N] : ",posx,posy);
 	}while(ch=='y' || ch=='Y');
 }
@@ -259,7 +258,6 @@ void save(char fn[],rec s) {
 	fp=openFile(fn,"ab");
 	if(fwrite(&s,sizeof(s),1,fp)!=1)
 		printf("Error writing into file.");
-	free(s.sub);
 	fclose(fp);
 }
 
@@ -535,7 +533,7 @@ void update()
 		if(strcmp(strupr(reg),strupr(s1.regNum))==0) {
 			flag=1;
 			gotoxy(x,++y);	
-			printf("Enter new details :\n\n");
+			printf("Enter new details for %s :\n\n",s1.name);
 			s1=add(fp2);	
 		}
 		save("temp.txt",s1);
@@ -585,7 +583,7 @@ void del()
 		save("temp.txt",s1);
 	}
 	if(flag==0) {
-		gotoxy(x,y-=1);
+		gotoxy(x,y);
 		printf("Record not found.");
 	}
 	else if(flag==2) {
@@ -610,7 +608,7 @@ void search()
 	FILE *fp;
 	rec s;
 	char reg[100];
-	int flag=0,x=25,y=10;
+	int flag=0,x=25,y=9;
 	fp=openFile("record.txt","rb");
 	gotoxy(x,6);
 	printf("Enter Registration No. of student record to be searched : ");
@@ -627,13 +625,11 @@ void search()
 		}
 	}
 	if(flag==0) {
-		y-=2;
 		gotoxy(x,y);
-		y+=4;
-		x=40;
 		printf("Record not found.");
+		y+=2;
 	}
 	*posy=y;
-	*posx=x;
+	*posx=25;
 	fclose(fp);
 }
